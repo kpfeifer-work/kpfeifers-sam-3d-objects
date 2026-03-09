@@ -67,7 +67,7 @@ class InferencePipeline:
         slat_decoder_gs_4_ckpt_path=None,
         ss_encoder_config_path=None,
         ss_encoder_ckpt_path=None,
-        decode_formats=["gaussian", "mesh"],
+        decode_formats=["mesh"],
         dtype="bfloat16",
         pad_size=1.0,
         version="v0",
@@ -542,7 +542,7 @@ class InferencePipeline:
         )
         if "mesh" in outputs:
             glb = postprocessing_utils.to_glb(
-                outputs["gaussian"][0],
+                None,
                 outputs["mesh"][0],
                 # Optional parameters
                 simplify=0.95,  # Ratio of triangles to remove in the simplification process
@@ -559,12 +559,6 @@ class InferencePipeline:
             glb = None
 
         outputs["glb"] = glb
-
-        if "gaussian" in outputs:
-            outputs["gs"] = outputs["gaussian"][0]
-
-        if "gaussian_4" in outputs:
-            outputs["gs_4"] = outputs["gaussian_4"][0]
 
         return outputs
 
@@ -591,7 +585,7 @@ class InferencePipeline:
     def decode_slat(
         self,
         slat: sp.SparseTensor,
-        formats: List[str] = ["mesh", "gaussian"],
+        formats: List[str] = ["mesh"],
     ) -> dict:
         """
         Decode the structured latent.
@@ -608,10 +602,6 @@ class InferencePipeline:
         with torch.no_grad():
             if "mesh" in formats:
                 ret["mesh"] = self.models["slat_decoder_mesh"](slat)
-            if "gaussian" in formats:
-                ret["gaussian"] = self.models["slat_decoder_gs"](slat)
-            if "gaussian_4" in formats:
-                ret["gaussian_4"] = self.models["slat_decoder_gs_4"](slat)
         # if "radiance_field" in formats:
         #     ret["radiance_field"] = self.models["slat_decoder_rf"](slat)
         return ret
